@@ -3,7 +3,7 @@ module GLI
     module HelpModules
       class OptionsFormatter
         def initialize(flags_and_switches,sorter,wrapper_class)
-          @flags_and_switches = sorter.call(flags_and_switches)
+          @flags_and_switches = sorter.sort(flags_and_switches)
           @wrapper_class = wrapper_class
         end
 

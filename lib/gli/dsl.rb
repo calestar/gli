@@ -15,6 +15,27 @@ module GLI
     # +long_desc+:: A String that is s longer description of the switch, flag, or command following.
     def long_desc(long_desc); @next_long_desc = long_desc; end
 
+    # Provides the name of the category the next command is a member of
+    #
+    # +category_name+:: A Symbol giving the name of the next command's category
+    def category(category_name); @next_category_name = category_name; end
+
+    # Defines a help category  This category is used to group commands together for display in the
+    # help.  Note that one must use the 'categories' sorting option to enable this feature.
+    #
+    # +category_name+:: A Symbol giving the name of the category
+    # +description+:: A String describing this category. This will be displayed in the help
+    # +options+:: Symbol or array of symbols to select options for this category. Valid values are:
+    #             +:default+:: Sets this category as default category for commands without explicit
+    #                          category associated
+    def help_category(category_name, description, options=[])
+      category = HelpCategory.new(category_name, description, Array(options).flatten)
+      help_categories_order << category
+      help_categories[category_name] = category
+
+      set_default_help_category(category) if category.default?
+    end
+
     # Describe the argument name of the next flag.  It's important to keep
     # this VERY short and, ideally, without any spaces (see Example).
     #
@@ -178,6 +199,7 @@ module GLI
         :skips_post => @skips_post,
         :skips_around => @skips_around,
         :hide_commands_without_desc => @hide_commands_without_desc,
+        :category => @next_category_name,
       }
       @commands_declaration_order ||= []
       if names.first.kind_of? Hash
@@ -200,6 +222,7 @@ module GLI
       end
       clear_nexts
       @next_arguments = []
+      @next_category_name = nil
     end
     alias :c :command
 
@@ -211,6 +234,9 @@ module GLI
       @switches_declaration_order ||= []
     end
 
+    def help_categories_order # :nodoc:
+      @help_categories_order ||= []
+    end
 
     private
     # Checks that the names passed in have not been used in another flag or option

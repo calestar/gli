@@ -1,6 +1,7 @@
 require 'erb'
 require 'gli/command'
 require 'gli/terminal'
+require 'gli/commands/help_modules/sorters'
 require 'gli/commands/help_modules/list_formatter'
 require 'gli/commands/help_modules/text_wrapper'
 require 'gli/commands/help_modules/one_line_wrapper'
@@ -18,11 +19,6 @@ require 'gli/commands/help_modules/terminal_synopsis_formatter'
 
 module GLI
   module Commands
-    SORTERS = {
-      :manually => lambda { |list| list },
-      :alpha    => lambda { |list| list.sort },
-    }
-
     WRAPPERS = {
       :to_terminal => HelpModules::TextWrapper,
       :never       => HelpModules::OneLineWrapper,
@@ -60,10 +56,10 @@ module GLI
               :description => 'Shows a list of commands or help for one command',
               :arguments_name => 'command',
               :long_desc => 'Gets help for the application or its commands. Can also list the commands in a way helpful to creating a bash-style completion function',
-              :arguments => [Argument.new(:command_name, [:multiple, :optional])])
+              :arguments => [Argument.new(:command_name, [:multiple, :optional])],
+              :category => :BuiltIns)
         @app = app
         @parent = app
-        @sorter = SORTERS[@app.help_sort_type]
         @text_wrapping_class = WRAPPERS[@app.help_text_wrap_type]
         @synopsis_formatter_class = SYNOPSIS_FORMATTERS[@app.synopsis_format_type]
 
@@ -85,13 +81,24 @@ module GLI
 
     private
 
+      def sorter
+        case @app.help_sort_type
+          when :manually
+            Sorters::Manual.new
+          when :alpha
+            Sorters::Alpha.new
+          when :categories
+            Sorters::Categories.new(@app)
+        end
+      end
+
       def show_help(global_options,options,arguments,out,error)
         command_finder = HelpModules::CommandFinder.new(@app,arguments,error)
         if options[:c]
           help_output = HelpModules::HelpCompletionFormat.new(@app,command_finder,arguments).format
           out.puts help_output unless help_output.nil?
         elsif arguments.empty? || options[:c]
-          out.puts HelpModules::GlobalHelpFormat.new(@app,@sorter,@text_wrapping_class).format
+          out.puts HelpModules::GlobalHelpFormat.new(@app,sorter,@text_wrapping_class).format
         else
           name = arguments.shift
           command = command_finder.find_command(name)
@@ -99,7 +106,7 @@ module GLI
             out.puts HelpModules::CommandHelpFormat.new(
               command,
               @app,
-              @sorter,
+              sorter,
               @synopsis_formatter_class,
               @text_wrapping_class).format
           end

@@ -145,6 +145,18 @@ module GLI
       @commands
     end
 
+    def help_categories # :nodoc:
+      @help_categories ||= {}
+    end
+
+    def set_default_help_category(category)
+      @default_help_category = category
+    end
+
+    def default_help_category
+      @default_help_category
+    end
+
     def pre_block
       @pre_block ||= Proc.new do
         true

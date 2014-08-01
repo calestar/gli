@@ -240,6 +240,7 @@ module GLI
     # sort_type:: How you want help commands/options sorted:
     #             +:manually+:: help commands/options are ordered in the order declared.
     #             +:alpha+:: sort alphabetically (default)
+    #             +:categories:+:: sorts by categories
     def sort_help(sort_type)
       @help_sort_type = sort_type
     end

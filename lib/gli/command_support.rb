@@ -29,6 +29,10 @@ module GLI
       @arguments
     end
 
+    def help_category
+      @category
+    end
+
     # If true, this command doesn't want the pre block run before it executes
     def skips_pre 
       @skips_pre

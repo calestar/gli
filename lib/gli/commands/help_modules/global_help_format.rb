@@ -20,16 +20,33 @@ module GLI
             program_long_desc = "\n"
           end
 
-          command_formatter = ListFormatter.new(@sorter.call(@app.commands_declaration_order.reject(&:nodoc)).map { |command|
-            [[command.name,Array(command.aliases)].flatten.join(', '),command.description]
-          }, @wrapper_class)
-          stringio = StringIO.new
-          command_formatter.output(stringio)
-          commands = stringio.string
+          sorted_commands = @sorter.sort(@app.commands_declaration_order.reject(&:nodoc))
+          if sorted_commands.first.is_a? Array then
+            commands = ""
+            sorted_commands.each do |category_name, command_list|
+              command_formatter = ListFormatter.new(command_list.map { |command|
+                [[command.name,Array(command.aliases)].flatten.join(', '),command.description]
+              }, @wrapper_class, category_name)
+              stringio = StringIO.new
+              command_formatter.output(stringio)
+              commands += stringio.string
+            end
 
-          global_option_descriptions = OptionsFormatter.new(global_flags_and_switches,@sorter,@wrapper_class).format
+            global_option_descriptions = OptionsFormatter.new(global_flags_and_switches,@sorter,@wrapper_class).format
 
-          GLOBAL_HELP.result(binding)
+            return GLOBAL_HELP.result(binding)
+          else
+            command_formatter = ListFormatter.new(sorted_commands.map { |command|
+              [[command.name,Array(command.aliases)].flatten.join(', '),command.description]
+            }, @wrapper_class)
+            stringio = StringIO.new
+            command_formatter.output(stringio)
+            commands = stringio.string
+
+            global_option_descriptions = OptionsFormatter.new(global_flags_and_switches,@sorter,@wrapper_class).format
+
+            return GLOBAL_HELP.result(binding)
+          end
         end
 
       private

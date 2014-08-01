@@ -45,6 +45,7 @@ module GLI
     #           +skips_post+:: if true, this command advertises that it doesn't want the post block called after it
     #           +skips_around+:: if true, this command advertises that it doesn't want the around block called
     #           +hide_commands_without_desc+:: if true and there isn't a description the command is not going to be shown in the help
+    #           +category+:: the name of the category this command is associated to
     def initialize(options)
       super(options[:names],options[:description],options[:long_desc])
       @arguments_description = options[:arguments_name] || ''
@@ -54,6 +55,7 @@ module GLI
       @skips_post = options[:skips_post]
       @skips_around = options[:skips_around]
       @hide_commands_without_desc = options[:hide_commands_without_desc]
+      @category = options[:category]
       @commands_declaration_order = []
       @flags_declaration_order = []
       @switches_declaration_order = []

@@ -19,6 +19,10 @@ wrap_help_text (ENV['TODO_WRAP_HELP_TEXT'] || 'to_terminal').to_sym
 synopsis_format (ENV['SYNOPSES'] || 'full').to_sym
 hide_commands_without_desc ENV['HIDE_COMMANDS_WITHOUT_DESC'] === 'true'
 
+help_category :basic, "Basic commands"
+help_category :advanced, "Advanced commands"
+help_category :other, "Other commands", :default
+
 subcommand_option_handling :normal
 arguments :strict
 

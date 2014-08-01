@@ -63,18 +63,38 @@ COMMANDS
         end
  
         def format_subcommands(command)
-          commands_array = @sorter.call(command.commands_declaration_order).map { |cmd| 
-            if command.get_default_command == cmd.name
-              [cmd.names,String(cmd.description) + " (default)"] 
-            else
-              [cmd.names,cmd.description] 
+          sorted_commands = @sorter.sort(command.commands_declaration_order)
+          if sorted_commands.first.is_a? Array then
+            commands = ""
+            sorted_commands.each do |category_name, command_list|
+              commands_array = command_list.map { |cmd|
+                if command.get_default_command == cmd.name
+                  [cmd.names,String(cmd.description) + " (default)"]
+                else
+                  [cmd.names,cmd.description]
+                end
+              }
+              if command.has_action?
+                commands_array.unshift(["<default>",command.default_description])
+              end
+              formatter = ListFormatter.new(commands_array,@wrapper_class)
+              commands += StringIO.new.tap { |io| formatter.output(io) }.string
             end
-          }
-          if command.has_action?
-            commands_array.unshift(["<default>",command.default_description])
+            return commands
+          else
+            commands_array = sorted_commands.map { |cmd|
+              if command.get_default_command == cmd.name
+                [cmd.names,String(cmd.description) + " (default)"]
+              else
+                [cmd.names,cmd.description]
+              end
+            }
+            if command.has_action?
+              commands_array.unshift(["<default>",command.default_description])
+            end
+            formatter = ListFormatter.new(commands_array,@wrapper_class)
+            StringIO.new.tap { |io| formatter.output(io) }.string
           end
-          formatter = ListFormatter.new(commands_array,@wrapper_class)
-          StringIO.new.tap { |io| formatter.output(io) }.string
         end
       end
     end
